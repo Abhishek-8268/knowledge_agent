@@ -1,5 +1,5 @@
 import sys
-from agent import run_agent, memory 
+from agent.core import run_agent, memory 
 
 def main():
     print("==================================================")

@@ -1,8 +1,7 @@
 import sqlite3
 import random
 from datetime import datetime, timedelta
-
-DB_NAME = "ecommerce.db"
+from config.settings import DB_NAME
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)

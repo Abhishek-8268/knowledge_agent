@@ -1,8 +1,9 @@
 import json
 from groq import Groq
-from web_tools import web_search, read_url
-from sql_tool import query_database
-from memory import MemoryManager
+from config.settings import DEFAULT_MODEL
+from tools.web_tools import web_search, read_url
+from tools.sql_tool import query_database
+from memory.manager import MemoryManager
 
 # Initialize our core services
 client = Groq()
@@ -126,7 +127,7 @@ def run_agent(user_question: str, chat_history: list = None, max_steps: int = 5)
     for step in range(max_steps):
         try:
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=DEFAULT_MODEL,
                 messages=messages,
                 tools=agent_tools,
                 tool_choice="auto",

@@ -27,7 +27,7 @@ Create a `.env` file in the root directory (you can rename `.env.example` if you
 ## Database Seeding
 
 To initialize the E-commerce database with ~150 rows of sample data (Customers, Products, and Orders), run the seed script:
-`python database.py`
+`python db/setup.py`
 
 ## Running the Agent
 

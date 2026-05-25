@@ -11,7 +11,7 @@ However, the tradeoff is reliability and latency. LLMs can occasionally hallucin
 
 **1. Bad/Malicious SQL Generation:**
 * **Risk:** The LLM might hallucinate columns that don't exist or generate destructive commands (e.g., `DROP TABLE`, `DELETE FROM`).
-* **Mitigation:** I implemented a strict Python-level regex guardrail in `sql_tool.py`. Before any SQL reaches the database, the code verifies that the query starts with `SELECT` and explicitly rejects any DDL/DML keywords (like `UPDATE`, `INSERT`, `DROP`).
+* **Mitigation:** I implemented a strict Python-level regex guardrail in `tools/sql_tool.py`. Before any SQL reaches the database, the code verifies that the query starts with `SELECT` and explicitly rejects any DDL/DML keywords (like `UPDATE`, `INSERT`, `DROP`).
 
 **2. API Parsing and Formatting Errors:**
 * **Risk:** The model might format its internal tool-call JSON incorrectly, causing the Groq API parser to fail and crash the local script.
@@ -21,5 +21,4 @@ However, the tradeoff is reliability and latency. LLMs can occasionally hallucin
 
 If the context (past memory + tool results + database schema) gets too large, it will exceed the model's maximum token limit.
 
-* **Current Mitigation:** The `read_url` tool explicitly truncates extracted web page text to a maximum of 2,000 characters to prevent a single long article from overflowing the context window.
-* **Future Scaling:** If the conversation history grows too large over time, I would implement a "rolling window" approach (e.g., only keeping the last 5 conversation turns in the active prompt) or utilize a smaller, faster LLM to periodically summarize the past conversation history to compress token usage.
+* **Context Length Mitigation:** The `read_url` tool explicitly truncates extracted web page text to a maximum of 2,000 characters to prevent a single long article from overflowing the context window. Additionally, I implemented a "rolling window" approach in `main.py` that only keeps the last 5 conversation turns in the active short-term prompt memory to prevent the LLM context from blowing up over a long session.

@@ -3,17 +3,16 @@ import re
 import os
 from dotenv import load_dotenv
 from groq import Groq
+from config.settings import DB_NAME, SCHEMA_PATH, DEFAULT_MODEL
 
 # Ensure env variables are loaded
 load_dotenv()
 client = Groq()
 
-DB_NAME = "ecommerce.db"
-
 def get_schema() -> str:
     """Reads the schema definition from SCHEMA.md to feed to the LLM."""
     try:
-        with open("SCHEMA.md", "r") as file:
+        with open(SCHEMA_PATH, "r", encoding="utf-8") as file:
             return file.read()
     except FileNotFoundError:
         return "Schema file not found. Ensure SCHEMA.md exists."
@@ -73,7 +72,7 @@ def generate_sql(question: str) -> str:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": question}
             ],
-            model="llama-3.3-70b-versatile",
+            model=DEFAULT_MODEL,
             temperature=0, # Temperature 0 makes the model more deterministic and logical
         )
         
