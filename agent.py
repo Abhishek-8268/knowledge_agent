@@ -73,7 +73,7 @@ def execute_tool(tool_call) -> str:
     name = tool_call.function.name
     args = json.loads(tool_call.function.arguments)
     
-    print(f"\n[Agent Thinking] ⚙️ Calling Tool: {name} with arguments: {args}")
+    print(f"\n[Agent Thinking] * Calling Tool: {name} with arguments: {args}")
     
     try:
         if name == "query_database":
@@ -89,19 +89,39 @@ def execute_tool(tool_call) -> str:
     except Exception as e:
         return f"Tool execution failed: {str(e)}"
 
-def run_agent(user_question: str, max_steps: int = 5) -> str:
+def run_agent(user_question: str, chat_history: list = None, max_steps: int = 5) -> str:
     """The core agentic loop."""
     
-    # A balanced system prompt with clear exit instructions
+    if chat_history is None:
+        chat_history = []
+        
+    # Automatically retrieve context on new questions
+    past_context = memory.retrieve_context(user_question)
+    
     messages = [
         {
             "role": "system", 
-            "content": """You are a helpful research assistant. You have access to tools to fetch data (SQL database, Web Search, Memory). 
-            Step 1: Use a tool if you need external information to answer the question. 
-            Step 2: Once you receive the tool's result and have enough information, output the final human-readable answer directly to the user and DO NOT call any more tools."""
-        },
-        {"role": "user", "content": user_question}
+            "content": f"""You are a helpful e-commerce data assistant. You have access to tools (SQL database, Web Search, Memory).
+            
+            Relevant Past Conversation Context:
+            {past_context}
+            
+            CRITICAL RULES:
+            1. Conversational Memory: Always pay attention to the chat history and the Relevant Past Conversation Context provided above. If the user introduces themselves, makes small talk, or asks a casual question, respond naturally and politely WITHOUT using tools.
+            2. No Tangents: When using the `query_database` tool, strictly target exactly what the user is asking. Do NOT invent broad, unrelated queries.
+            3. Context Awareness: If the user asks a short follow-up (e.g., "what is its price?"), use the chat history to identify the specific item.
+            4. Final Answer: Once you have the data, or if no tools are needed, output a clear, human-readable answer and stop.
+            5. Sources: If you used `web_search` or `read_url`, you MUST append a 'Sources:' list (Title + URL) at the end of your final answer."""
+        }
     ]
+    
+    # Append short-term chat history
+    messages.extend(chat_history)
+    
+    messages.append({
+        "role": "user",
+        "content": user_question
+    })
     
     for step in range(max_steps):
         try:
